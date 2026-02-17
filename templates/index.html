@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rent Info PDF Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f0f2f5;
+            --surface: #ffffff;
+            --surface-hover: #f7f8fa;
+            --border: #e0e3e8;
+            --border-focus: #6366f1;
+            --text: #1a1a2e;
+            --text-muted: #6b7280;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --radius: 10px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Header ──────────────────────────────────────────── */
+        .header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.92);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-refresh {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-refresh:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ── Layout ──────────────────────────────────────────── */
+        .container {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            height: calc(100vh - 73px);
+        }
+
+        /* ── Sidebar ─────────────────────────────────────────── */
+        .sidebar {
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .select-wrap {
+            position: relative;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            appearance: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        select:hover {
+            border-color: var(--border-focus);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .select-wrap::after {
+            content: "▾";
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* ── Form groups ─────────────────────────────────────── */
+        .override-section {
+            display: none;
+        }
+
+        .override-section.visible {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 9px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:hover {
+            border-color: var(--border-focus);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .form-group input.modified {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* ── Buttons ─────────────────────────────────────────── */
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 11px 20px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-preview {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-preview:hover {
+            background: var(--surface-hover);
+            border-color: var(--accent);
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #6366f1, #818cf8);
+            color: white;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-download:active {
+            transform: translateY(0);
+        }
+
+        .btn-reset {
+            flex: none;
+            padding: 11px 14px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--danger);
+            border-radius: var(--radius);
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .btn-reset:hover {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        /* ── Preview pane ────────────────────────────────────── */
+        .preview-pane {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e8eaed;
+            position: relative;
+        }
+
+        .preview-empty {
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .preview-empty .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+
+        .preview-empty p {
+            font-size: 14px;
+        }
+
+        .preview-pane iframe {
+            width: 8.5in;
+            height: 11in;
+            border: none;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transform-origin: top center;
+        }
+
+        /* ── Toast ────────────────────────────────────────────── */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 200;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.success {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .toast.error {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* ── Loading spinner ──────────────────────────────────── */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── Override badge ───────────────────────────────────── */
+        .override-badge {
+            display: inline-block;
+            font-size: 10px;
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 6px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>Rent Info PDF Generator</h1>
+        <button class="btn-refresh" onclick="refreshData()">↻ Refresh Sheet Data</button>
+    </div>
+
+    <div class="container">
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+
+            <!-- Unit selector -->
+            <div>
+                <div class="section-title">Select Unit</div>
+                <div class="select-wrap">
+                    <select id="unitSelect" onchange="onUnitSelect()">
+                        <option value="">— Choose a unit —</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Overrides -->
+            <div class="override-section" id="overrideSection">
+                <div class="section-title">Session Overrides <span class="override-badge" id="overrideBadge"
+                        style="display:none">modified</span></div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Base Rent ($)</label>
+                        <input type="text" id="ov_base_rent" data-field="base_rent" oninput="markModified(this)">
+                    </div>
+                    <div class="form-group">
+                        <label>Security Deposit ($)</label>
+                        <input type="text" id="ov_security_deposit" data-field="security_deposit"
+                            oninput="markModified(this)">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Application Fee ($)</label>
+                        <input type="text" id="ov_application_fee" data-field="application_fee"
+                            oninput="markModified(this)">
+                    </div>
+                    <div class="form-group">
+                        <label>Cleaning Fee ($)</label>
+                        <input type="text" id="ov_cleaning_fee" data-field="cleaning_fee" oninput="markModified(this)">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Holding Fee %</label>
+                        <input type="text" id="ov_holding_fee_percent" data-field="holding_fee_percent"
+                            oninput="markModified(this)">
+                    </div>
+                    <div class="form-group">
+                        <label>Parking ($/mo)</label>
+                        <input type="text" id="ov_parking_monthly_cost" data-field="parking_monthly_cost"
+                            oninput="markModified(this)">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>WiFi ($/mo)</label>
+                        <input type="text" id="ov_wifi_monthly_cost" data-field="wifi_monthly_cost"
+                            oninput="markModified(this)">
+                    </div>
+                    <div class="form-group">
+                        <label>Pet Rent ($/mo)</label>
+                        <input type="text" id="ov_pet_rent_monthly" data-field="pet_rent_monthly"
+                            oninput="markModified(this)">
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-preview" id="btnPreview" onclick="previewPDF()">Preview</button>
+                    <button class="btn btn-download" id="btnDownload" onclick="downloadPDF()">Download PDF</button>
+                    <button class="btn-reset" onclick="resetOverrides()">Reset</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Preview pane -->
+        <div class="preview-pane" id="previewPane">
+            <div class="preview-empty" id="previewEmpty">
+                <div class="icon">📄</div>
+                <p>Select a unit to preview the rental information sheet</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let currentUnit = null;
+        let originalValues = {};
+
+        // ── Init ───────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', loadUnits);
+
+        async function loadUnits() {
+            try {
+                const res = await fetch('/api/units');
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+
+                const sel = document.getElementById('unitSelect');
+                sel.innerHTML = '<option value="">— Choose a unit —</option>';
+                data.units.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.unit_id;
+                    opt.textContent = `${u.street_address} · Unit ${u.unit_number}`;
+                    sel.appendChild(opt);
+                });
+            } catch (err) {
+                showToast('Failed to load units: ' + err.message, 'error');
+            }
+        }
+
+        async function onUnitSelect() {
+            const unitId = document.getElementById('unitSelect').value;
+            if (!unitId) {
+                document.getElementById('overrideSection').classList.remove('visible');
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/units/${unitId}`);
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+
+                currentUnit = data.unit;
+                populateOverrides(data.unit);
+                document.getElementById('overrideSection').classList.add('visible');
+
+                // Auto-preview
+                previewPDF();
+            } catch (err) {
+                showToast('Failed to load unit: ' + err.message, 'error');
+            }
+        }
+
+        function populateOverrides(unit) {
+            const fields = ['base_rent', 'security_deposit', 'application_fee',
+                'cleaning_fee', 'holding_fee_percent', 'parking_monthly_cost',
+                'wifi_monthly_cost', 'pet_rent_monthly'];
+
+            fields.forEach(f => {
+                const input = document.getElementById('ov_' + f);
+                if (input) {
+                    const val = unit[f] ?? '';
+                    input.value = val;
+                    input.classList.remove('modified');
+                    originalValues[f] = String(val);
+                }
+            });
+            document.getElementById('overrideBadge').style.display = 'none';
+        }
+
+        function markModified(input) {
+            const field = input.dataset.field;
+            if (input.value !== originalValues[field]) {
+                input.classList.add('modified');
+            } else {
+                input.classList.remove('modified');
+            }
+            // Show/hide badge
+            const anyModified = document.querySelectorAll('.form-group input.modified').length > 0;
+            document.getElementById('overrideBadge').style.display = anyModified ? 'inline-block' : 'none';
+        }
+
+        function getOverrides() {
+            const overrides = {};
+            document.querySelectorAll('.form-group input[data-field]').forEach(input => {
+                if (input.classList.contains('modified')) {
+                    overrides[input.dataset.field] = input.value;
+                }
+            });
+            return overrides;
+        }
+
+        function resetOverrides() {
+            if (currentUnit) populateOverrides(currentUnit);
+        }
+
+        // ── Preview ────────────────────────────────────────────
+        async function previewPDF() {
+            const unitId = document.getElementById('unitSelect').value;
+            if (!unitId) return;
+
+            const btn = document.getElementById('btnPreview');
+            btn.innerHTML = '<span class="spinner"></span>Loading…';
+            btn.disabled = true;
+
+            try {
+                const overrides = getOverrides();
+                const res = await fetch(`/preview/${unitId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(overrides),
+                });
+
+                if (!res.ok) throw new Error(await res.text());
+
+                const html = await res.text();
+                const pane = document.getElementById('previewPane');
+                const empty = document.getElementById('previewEmpty');
+                if (empty) empty.remove();
+
+                // Remove old iframe
+                const oldFrame = pane.querySelector('iframe');
+                if (oldFrame) oldFrame.remove();
+
+                const iframe = document.createElement('iframe');
+                pane.appendChild(iframe);
+
+                // Scale to fit
+                scalePreview(iframe, pane);
+                window.addEventListener('resize', () => scalePreview(iframe, pane));
+
+                iframe.contentDocument.open();
+                iframe.contentDocument.write(html);
+                iframe.contentDocument.close();
+
+            } catch (err) {
+                showToast('Preview failed: ' + err.message, 'error');
+            } finally {
+                btn.innerHTML = 'Preview';
+                btn.disabled = false;
+            }
+        }
+
+        function scalePreview(iframe, pane) {
+            const paneH = pane.clientHeight - 48;
+            const docH = 11 * 96; // 11in at 96dpi
+            const scale = Math.min(paneH / docH, 1);
+            iframe.style.transform = `scale(${scale})`;
+        }
+
+        // ── Download ───────────────────────────────────────────
+        async function downloadPDF() {
+            const unitId = document.getElementById('unitSelect').value;
+            if (!unitId) return;
+
+            const btn = document.getElementById('btnDownload');
+            btn.innerHTML = '<span class="spinner"></span>Generating…';
+            btn.disabled = true;
+
+            try {
+                const overrides = getOverrides();
+                const res = await fetch(`/download/${unitId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(overrides),
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Download failed');
+                }
+
+                const blob = await res.blob();
+                const disposition = res.headers.get('Content-Disposition') || '';
+                const match = disposition.match(/filename=(.+)/);
+                const filename = match ? match[1] : 'rental_info.pdf';
+
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(a.href);
+
+                showToast('PDF downloaded successfully', 'success');
+            } catch (err) {
+                showToast('Download failed: ' + err.message, 'error');
+            } finally {
+                btn.innerHTML = 'Download PDF';
+                btn.disabled = false;
+            }
+        }
+
+        // ── Refresh ────────────────────────────────────────────
+        async function refreshData() {
+            try {
+                const res = await fetch('/api/refresh', { method: 'POST' });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+
+                showToast(`Refreshed: ${data.count} units loaded`, 'success');
+                loadUnits();
+            } catch (err) {
+                showToast('Refresh failed: ' + err.message, 'error');
+            }
+        }
+
+        // ── Toast ──────────────────────────────────────────────
+        function showToast(msg, type) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = `toast ${type} show`;
+            setTimeout(() => el.classList.remove('show'), 3500);
+        }
+    </script>
+
+</body>
+
+</html>

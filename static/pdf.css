@@ -1,0 +1,113 @@
+/* ── PDF‑only stylesheet for Rental Information Sheet ────────────── */
+
+@page {
+    size: letter;
+    margin: 0.75in 0.85in;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 10pt;
+    color: #1a1a1a;
+    line-height: 1.45;
+}
+
+/* ── Title ────────────────────────────────────────────────────────── */
+
+.title {
+    text-align: center;
+    font-size: 16pt;
+    font-weight: 700;
+    letter-spacing: 0.5pt;
+    margin-bottom: 18pt;
+    color: #111;
+}
+
+/* ── Address block ────────────────────────────────────────────────── */
+
+.address-block {
+    margin-bottom: 14pt;
+    line-height: 1.5;
+}
+
+.address-block .label {
+    font-weight: 600;
+}
+
+/* ── Section headers ──────────────────────────────────────────────── */
+
+.section-header {
+    font-size: 11pt;
+    font-weight: 700;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    padding-bottom: 3pt;
+    border-bottom: 1.5pt solid #333;
+    color: #111;
+}
+
+/* ── Key‑value lines ──────────────────────────────────────────────── */
+
+.kv-line {
+    margin-bottom: 2pt;
+}
+
+.kv-line .label {
+    font-weight: 600;
+}
+
+/* ── Total lines ──────────────────────────────────────────────────── */
+
+.total-line {
+    font-weight: 700;
+    margin-top: 6pt;
+    margin-bottom: 2pt;
+    font-size: 10.5pt;
+}
+
+/* ── Note / explanatory text ──────────────────────────────────────── */
+
+.note {
+    font-size: 9pt;
+    color: #444;
+    margin-top: 4pt;
+    margin-bottom: 2pt;
+    line-height: 1.4;
+}
+
+.note-amount {
+    font-weight: 700;
+    font-size: 10pt;
+    color: #1a1a1a;
+}
+
+.note-calc {
+    font-size: 8.5pt;
+    color: #555;
+    margin-top: 1pt;
+}
+
+/* ── Divider ──────────────────────────────────────────────────────── */
+
+.divider {
+    border: none;
+    border-top: 0.5pt solid #ccc;
+    margin: 10pt 0;
+}
+
+/* ── Footer / contact ─────────────────────────────────────────────── */
+
+.contact-block {
+    margin-top: 6pt;
+}
+
+.apply-link {
+    color: #0066cc;
+    text-decoration: none;
+}

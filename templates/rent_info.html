@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: letter;
+            margin: 0.45in 0.7in 0.4in 0.7in;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 9.5pt;
+            color: #2d2d2d;
+            line-height: 1.5;
+        }
+
+        /* ── Header banner ───────────────────────────────── */
+        .header-banner {
+            background-color: transparent;
+            color: #111111;
+            padding: 20pt 24pt 20pt 24pt;
+            margin: -2pt -6pt 20pt -6pt;
+            text-align: center;
+        }
+
+        .header-banner h1 {
+            font-size: 16pt;
+            font-weight: bold;
+            letter-spacing: 2pt;
+        }
+
+        /* ── Property info bar ────────────────────────────── */
+        .property-bar {
+            background-color: transparent;
+            padding: 14pt 20pt 12pt 20pt;
+            margin-bottom: 24pt;
+            text-align: center;
+        }
+
+        .property-bar .address-line,
+        .property-bar .unit-line,
+        .property-bar .city-line {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11pt;
+            font-weight: bold;
+            color: #1e3a5f;
+            letter-spacing: 0.3pt;
+            margin-bottom: 2pt;
+        }
+
+        /* ── Section ──────────────────────────────────────── */
+        .section {
+            margin-bottom: 18pt;
+        }
+
+        .section-title {
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: #1e3a5f;
+            padding: 5pt 10pt;
+            margin-bottom: 8pt;
+            background-color: #eaf0f6;
+            border-bottom: 1.5pt solid #1e3a5f;
+            text-transform: uppercase;
+            letter-spacing: 0.6pt;
+        }
+
+        /* ── Key-value rows ───────────────────────────────── */
+        .row {
+            padding: 1.5pt 0;
+            font-size: 9.5pt;
+        }
+
+        .row .label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* ── Totals ───────────────────────────────────────── */
+        .total-row {
+            margin-top: 7pt;
+            padding: 2pt 0;
+            font-weight: bold;
+            font-size: 10pt;
+            color: #1e3a5f;
+        }
+
+        /* ── Notes ────────────────────────────────────────── */
+        .note {
+            font-size: 8.5pt;
+            color: #667788;
+            padding-top: 3pt;
+            line-height: 1.4;
+            font-style: italic;
+        }
+
+        .highlight-amount {
+            font-weight: bold;
+            font-size: 10.5pt;
+            color: #1e3a5f;
+            padding-top: 4pt;
+            padding-bottom: 1pt;
+        }
+
+        .calc-detail {
+            font-size: 8pt;
+            color: #889aaa;
+        }
+
+        /* ── Divider ──────────────────────────────────────── */
+        .section-divider {
+            border: none;
+            border-top: 0.5pt solid #e0e4e8;
+            margin: 0 0 18pt 0;
+        }
+
+        /* ── Contact info ─────────────────────────────────── */
+        .contact-info {
+            margin-top: 4pt;
+        }
+
+        .contact-info .row {
+            padding: 1.5pt 0;
+        }
+
+        /* ── Apply link ───────────────────────────────────── */
+        .apply-link {
+            color: #1e3a5f;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Banner -->
+    <div class="header-banner">
+        <h1>RENTAL INFORMATION SHEET</h1>
+    </div>
+
+    <!-- Property Info -->
+    <div class="property-bar">
+        <div class="address-line">{{ street_address }}</div>
+        <div class="unit-line">UNIT {{ unit_number }}</div>
+        <div class="city-line">{{ city_state_zip }}</div>
+    </div>
+
+    <!-- Rent Breakdown -->
+    <div class="section">
+        <div class="section-title">Rent Breakdown</div>
+        <div class="row"><span class="label">Base Rent:</span> {{ base_rent_fmt }} / month</div>
+        <div class="row"><span class="label">Utilities:</span> {{ utilities_label }}</div>
+        {% if not utilities_included %}
+        {% if electric_included %}
+        <div class="row"><span class="label">Electric:</span> Included</div>
+        {% endif %}
+        {% if wsg_monthly and wsg_monthly > 0 %}
+        <div class="row"><span class="label">WSG:</span> ${{ "%.0f"|format(wsg_monthly) }} / month</div>
+        {% endif %}
+        {% endif %}
+        <div class="total-row">Total Monthly Housing Cost: {{ total_monthly_fmt }}</div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- Move-In Costs -->
+    <div class="section">
+        <div class="section-title">Move-In Costs</div>
+        <div class="row"><span class="label">First Month Rent:</span> {{ first_month_rent_fmt }}</div>
+        <div class="row"><span class="label">Last Month&rsquo;s Rent:</span> {{ last_month_rent_fmt }}</div>
+        <div class="row"><span class="label">Security Deposit:</span> {{ security_deposit_fmt }}</div>
+        <div class="row"><span class="label">Application Fee:</span> {{ application_fee_fmt }}</div>
+        <div class="row"><span class="label">Cleaning Fee:</span> {{ cleaning_fee_fmt }}</div>
+        <div class="total-row">Total Due at Move-In: {{ total_move_in_fmt }}</div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- Holding Fee -->
+    <div class="section">
+        <div class="section-title">Holding Fee (To Reserve Unit)</div>
+        <div class="row"><span class="label">Holding Fee:</span> {{ holding_fee_fmt }} ({{ holding_pct_fmt }} of monthly
+            rent)</div>
+        <div class="note">This fee reserves the unit and is credited toward your move-in costs.</div>
+        <div class="note">If the holding fee is paid separately before move-in, your remaining balance will be:</div>
+        <div class="highlight-amount">{{ remaining_fmt }}</div>
+        <div class="calc-detail">({{ total_move_in_fmt }} total &minus; {{ holding_fee_fmt }} holding fee)</div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- Parking -->
+    <div class="section">
+        <div class="section-title">Parking</div>
+        <div class="row"><span class="label">Available:</span> {{ "Yes" if parking_available else "No" }}</div>
+        {% if parking_available %}
+        <div class="row"><span class="label">Monthly Cost:</span> {{ parking_monthly_cost_fmt }} / month</div>
+        {% endif %}
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- WiFi -->
+    <div class="section">
+        <div class="section-title">WiFi</div>
+        <div class="row"><span class="label">Available:</span> {{ "Yes" if wifi_optional else "No" }}</div>
+        {% if wifi_optional %}
+        <div class="note">WiFi is optional and not required.</div>
+        {% endif %}
+        <div class="row"><span class="label">Cost:</span> {{ wifi_monthly_cost_fmt }} / month{% if wifi_device_limit %}
+            (up to {{ wifi_device_limit }} devices){% endif %}</div>
+        <div class="row"><span class="label">Cancellation:</span> {{ "Can be canceled at any time" if
+            wifi_cancel_anytime else "See lease terms" }}</div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- Pet Policy -->
+    <div class="section">
+        <div class="section-title">Pet Policy</div>
+        <div class="row"><span class="label">Allowed:</span> Cats, fish, hamsters</div>
+        <div class="row"><span class="label">Not Allowed:</span> Dogs, Snakes</div>
+        <div class="row"><span class="label">Pet Rent:</span> {{ pet_rent_monthly_fmt }} / month</div>
+        <div class="note">See website for additional details.</div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- How To Apply -->
+    <div class="section">
+        <div class="section-title">How To Apply</div>
+        <div class="row">Visit <a class="apply-link" href="{{ application_url }}">{{ application_url }}</a> &rarr; Click
+            on Apply Now</div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- Leasing Consultant -->
+    <div class="section">
+        <div class="section-title">Leasing Consultant</div>
+        <div class="contact-info">
+            <div class="row"><span class="label">Name:</span> {{ leasing_name }}</div>
+            <div class="row"><span class="label">Phone:</span> {{ leasing_phone }}</div>
+            <div class="row"><span class="label">Email:</span> {{ leasing_email }}</div>
+        </div>
+    </div>
+
+</body>
+
+</html>
