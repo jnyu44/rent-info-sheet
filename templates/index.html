@@ -223,6 +223,17 @@
             border-color: var(--accent);
         }
 
+        .btn-print {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-print:hover {
+            background: var(--surface-hover);
+            border-color: var(--accent);
+        }
+
         .btn-download {
             background: linear-gradient(135deg, #6366f1, #818cf8);
             color: white;
@@ -433,6 +444,7 @@
 
                 <div class="actions">
                     <button class="btn btn-preview" id="btnPreview" onclick="previewPDF()">Preview</button>
+                    <button class="btn btn-print" id="btnPrint" onclick="printPDF()">🖨 Print</button>
                     <button class="btn btn-download" id="btnDownload" onclick="downloadPDF()">Download PDF</button>
                     <button class="btn-reset" onclick="resetOverrides()">Reset</button>
                 </div>
@@ -596,6 +608,42 @@
             const docH = 11 * 96; // 11in at 96dpi
             const scale = Math.min(paneH / docH, 1);
             iframe.style.transform = `scale(${scale})`;
+        }
+
+        // ── Print ──────────────────────────────────────────────
+        async function printPDF() {
+            const unitId = document.getElementById('unitSelect').value;
+            if (!unitId) return;
+
+            const btn = document.getElementById('btnPrint');
+            btn.innerHTML = '<span class="spinner" style="border-color:rgba(0,0,0,0.2);border-top-color:#333"></span>Loading…';
+            btn.disabled = true;
+
+            try {
+                const overrides = getOverrides();
+                const res = await fetch(`/preview/${unitId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(overrides),
+                });
+
+                if (!res.ok) throw new Error(await res.text());
+
+                const html = await res.text();
+                const printWindow = window.open('', '_blank');
+                printWindow.document.open();
+                printWindow.document.write(html);
+                printWindow.document.close();
+                printWindow.onload = () => {
+                    printWindow.focus();
+                    printWindow.print();
+                };
+            } catch (err) {
+                showToast('Print failed: ' + err.message, 'error');
+            } finally {
+                btn.innerHTML = '🖨 Print';
+                btn.disabled = false;
+            }
         }
 
         // ── Download ───────────────────────────────────────────
